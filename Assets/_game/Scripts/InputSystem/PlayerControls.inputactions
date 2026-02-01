@@ -235,7 +235,7 @@
                     "name": "",
                     "id": "add8a973-3e1c-445d-9d57-b722fde336bb",
                     "path": "<Keyboard>/k",
-                    "interactions": "Press(pressPoint=0.5)",
+                    "interactions": "Press(pressPoint=0.5,behavior=2)",
                     "processors": "",
                     "groups": "",
                     "action": "Defend",
@@ -246,7 +246,7 @@
                     "name": "",
                     "id": "d501381e-d288-4901-9ba9-7d5148e1ae73",
                     "path": "<Gamepad>/buttonSouth",
-                    "interactions": "Press",
+                    "interactions": "Press(behavior=2)",
                     "processors": "",
                     "groups": "",
                     "action": "Defend",
@@ -289,5 +289,33 @@
             ]
         }
     ],
-    "controlSchemes": []
+    "controlSchemes": [
+        {
+            "name": "Gamepad",
+            "bindingGroup": "Gamepad",
+            "devices": [
+                {
+                    "devicePath": "<Gamepad>",
+                    "isOptional": false,
+                    "isOR": false
+                }
+            ]
+        },
+        {
+            "name": "Keyboard&Mouse",
+            "bindingGroup": "Keyboard&Mouse",
+            "devices": [
+                {
+                    "devicePath": "<Keyboard>",
+                    "isOptional": false,
+                    "isOR": false
+                },
+                {
+                    "devicePath": "<Mouse>",
+                    "isOptional": false,
+                    "isOR": false
+                }
+            ]
+        }
+    ]
 }
