@@ -25,7 +25,7 @@
                     "initialStateCheck": false
                 },
                 {
-                    "name": "Defense",
+                    "name": "Defend",
                     "type": "Button",
                     "id": "39b54f43-8c26-4238-98aa-83bbbf9369dd",
                     "expectedControlType": "",
@@ -235,10 +235,10 @@
                     "name": "",
                     "id": "add8a973-3e1c-445d-9d57-b722fde336bb",
                     "path": "<Keyboard>/k",
-                    "interactions": "",
+                    "interactions": "Press(pressPoint=0.5)",
                     "processors": "",
                     "groups": "",
-                    "action": "Defense",
+                    "action": "Defend",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },
@@ -246,10 +246,10 @@
                     "name": "",
                     "id": "d501381e-d288-4901-9ba9-7d5148e1ae73",
                     "path": "<Gamepad>/buttonSouth",
-                    "interactions": "",
+                    "interactions": "Press",
                     "processors": "",
                     "groups": "",
-                    "action": "Defense",
+                    "action": "Defend",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },

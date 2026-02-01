@@ -17,6 +17,7 @@ GameObject:
   - component: {fileID: 2198106554361132496}
   - component: {fileID: 1607485193551284149}
   - component: {fileID: 6850152679614028702}
+  - component: {fileID: 8957533906920418260}
   m_Layer: 0
   m_Name: PJ_DYLAN
   m_TagString: Untagged
@@ -181,7 +182,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d19b2bfa6b4404a4c9c08f2feccfe57c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  moveSpeed: 6
+  moveSpeed: 7
   normalizeDiagonal: 1
   animator: {fileID: 4112628113385821613}
   spriteRenderer: {fileID: 0}
@@ -245,6 +246,24 @@ CapsuleCollider2D:
   m_IsTrigger: 0
   m_UsedByEffector: 0
   m_UsedByComposite: 0
-  m_Offset: {x: -0.029966593, y: -0.023307323}
-  m_Size: {x: 1.1376996, y: 2.1649876}
+  m_Offset: {x: 0.015475869, y: 0.037252724}
+  m_Size: {x: 0.9015176, y: 1.7288014}
   m_Direction: 0
+--- !u!114 &8957533906920418260
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8713325724860101664}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5b69dfab4d25e3847832244b1d37cb97, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  itemEquip: {fileID: 1607485193551284149}
+  movement: {fileID: 1074364772834104990}
+  animator: {fileID: 4112628113385821613}
+  spriteRenderer: {fileID: 0}
+  waterFormSprite: {fileID: 0}
+  hideAnimationTime: 0.15
