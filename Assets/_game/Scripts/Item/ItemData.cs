@@ -4,8 +4,7 @@ public enum ItemType
 {
     None,
     MaskWater,
-    MaskFire,
-    // agrega más si quieres
+    MaskFire
 }
 
 [CreateAssetMenu(menuName = "Game/Item Data")]

@@ -11,12 +11,12 @@ public class ItemEquip : MonoBehaviour
     [Header("Equipped (solo lectura en inspector)")]
     [SerializeField] private ItemData equipped;
 
-    public ItemData Equipped => equipped;
     public ItemData SlotA => slotA;
     public ItemData SlotB => slotB;
+    public ItemData Equipped => equipped;
 
-    // Input System (PlayerInput Send Messages)
-    // Acción llamada "Equip" -> método "OnEquip"
+    // Input System (PlayerInput -> Send Messages)
+    // Action: "Equip" => method: "OnEquip"
     public void OnEquip()
     {
         EquipOrSwap();
@@ -26,49 +26,44 @@ public class ItemEquip : MonoBehaviour
     {
         int count = (slotA ? 1 : 0) + (slotB ? 1 : 0);
 
-        if (count == 0)
-            return;
+        if (count == 0) return;
 
         if (count == 1)
         {
             equipped = slotA ? slotA : slotB;
-            OnEquippedChanged(equipped);
             return;
         }
 
-        // Si hay 2, alterna
+        // count == 2 => alterna entre A y B
         if (equipped == null || equipped == slotB)
             equipped = slotA;
         else
             equipped = slotB;
-
-        OnEquippedChanged(equipped);
     }
 
-    // Llama esto cuando recojas un item
+    // Lo llama el pickup al recoger
     public bool TryAddItem(ItemData item)
     {
         if (!item) return false;
 
-        // opcional: evitar duplicados
+        // Evitar duplicados (opcional)
         if (slotA == item || slotB == item) return false;
 
         if (slotA == null)
         {
             slotA = item;
-            if (equipped == null) { equipped = slotA; OnEquippedChanged(equipped); }
+            if (equipped == null) equipped = slotA; // auto-equip al primer item
             return true;
         }
 
         if (slotB == null)
         {
             slotB = item;
-            if (equipped == null) { equipped = slotB; OnEquippedChanged(equipped); }
+            if (equipped == null) equipped = slotB;
             return true;
         }
 
-        // Ya tiene 2 items
-        return false;
+        return false; // inventario lleno (2 items)
     }
 
     private void OnEquippedChanged(ItemData newEquipped)
