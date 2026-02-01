@@ -672,6 +672,7 @@ MonoBehaviour:
   moveSpeed: 5.5
   normalizeDiagonal: 1
   animator: {fileID: 0}
+  spriteRenderer: {fileID: 0}
   inputDeadzone: 0.15
 --- !u!114 &1040265476
 MonoBehaviour:
