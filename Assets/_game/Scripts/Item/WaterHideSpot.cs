@@ -3,6 +3,10 @@ using UnityEngine.InputSystem;
 
 public class WaterHideSpot : MonoBehaviour
 {
+    [Header("Hide Duration (seconds)")]
+    [Tooltip("Cuánto tiempo permanece escondido en este spot. 0 usa el default del Player.")]
+    [SerializeField] private float hideSeconds = 0f;
+
     [Header("Visual")]
     [SerializeField] private GameObject wetOverlay;
 
@@ -21,19 +25,20 @@ public class WaterHideSpot : MonoBehaviour
 
     public bool IsOccupied => currentHider != null;
 
+    // ✅ Player podrá leer esta duración
+    public float HideSeconds => hideSeconds;
+
     private void Awake()
     {
         SetPrompt(false, null);
         SetWet(false);
     }
 
-    // ✅ Compatibilidad: método viejo (1 argumento)
     public bool TryHide(WaterMaskHideController hider)
     {
         return TryHide(hider, Vector2.down);
     }
 
-    // ✅ Método nuevo (2 argumentos) para guardar dirección
     public bool TryHide(WaterMaskHideController hider, Vector2 hideDir)
     {
         if (IsOccupied) return false;
@@ -44,7 +49,6 @@ public class WaterHideSpot : MonoBehaviour
         SetPrompt(false, hider);
         SetWet(true);
 
-        // ✅ PUZZLE HOOK (si este spot tiene BottleHideSpot, lo notifica)
         var bottle = GetComponent<BottleHideSpot>();
         if (bottle)
             bottle.OnPlayerHide();
@@ -62,7 +66,6 @@ public class WaterHideSpot : MonoBehaviour
 
     public Transform GetExitPoint()
     {
-        // Si no asignaste exits, devuelve null y el player saldrá en el mismo lugar
         if (!exitUp && !exitDown && !exitLeft && !exitRight) return null;
 
         if (Mathf.Abs(lastHideDir.x) > Mathf.Abs(lastHideDir.y))

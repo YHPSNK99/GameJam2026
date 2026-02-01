@@ -14,14 +14,15 @@ public class WaterMaskHideController : MonoBehaviour
 
     [Header("Hide visuals")]
     [SerializeField] private bool hideSpriteCompletely = true;
-    [SerializeField] private string hideTriggerName = "Hide"; // Trigger Animator (opcional)
+    [SerializeField] private string hideTriggerName = "Hide";
 
-    [Header("Auto Unhide")]
+    [Header("Default Hide Duration")]
+    [Tooltip("Duración por defecto si el spot no define un tiempo.")]
     [SerializeField] private float hideDuration = 5f;
+
     [SerializeField] private bool lockInputWhileHidden = true;
 
     [Header("Exit")]
-    [Tooltip("Si true, al salir se teletransporta al exit point del spot (ExitUp/Down/Left/Right).")]
     [SerializeField] private bool useExitPoints = true;
 
     private WaterHideSpot nearbySpot;
@@ -29,10 +30,8 @@ public class WaterMaskHideController : MonoBehaviour
 
     private bool isHidden;
     private Coroutine autoUnhideCo;
-
     private int hideTriggerHash;
 
-    // Capturamos el último input de movimiento para decidir por qué lado esconderse/salir
     private Vector2 lastMoveInput = Vector2.down;
 
     private void Awake()
@@ -46,20 +45,16 @@ public class WaterMaskHideController : MonoBehaviour
         hideTriggerHash = Animator.StringToHash(hideTriggerName);
     }
 
-    // Input System: acción "Move" => método "OnMove" (Send Messages)
     public void OnMove(InputValue value)
     {
         lastMoveInput = value.Get<Vector2>();
     }
 
-    // Input System: acción "Defend" => método "OnDefend"
     public void OnDefend()
     {
-        // Si está escondido, ignorar input para que dure sí o sí
         if (isHidden)
         {
             if (lockInputWhileHidden) return;
-
             Unhide();
             return;
         }
@@ -86,9 +81,13 @@ public class WaterMaskHideController : MonoBehaviour
 
     private void Hide()
     {
-        if (hideDuration <= 0f) hideDuration = 0.1f;
+        // Duración final: si el spot tiene tiempo definido, lo usa
+        float durationToUse = hideDuration;
+        if (nearbySpot != null && nearbySpot.HideSeconds > 0f)
+            durationToUse = nearbySpot.HideSeconds;
 
-        // Dirección con la que se esconde (si no hay input, down)
+        if (durationToUse <= 0f) durationToUse = 0.1f;
+
         Vector2 hideDir = lastMoveInput;
         if (hideDir.sqrMagnitude < 0.001f) hideDir = Vector2.down;
 
@@ -99,24 +98,19 @@ public class WaterMaskHideController : MonoBehaviour
 
         isHidden = true;
 
-        // Anim trigger (opcional)
         if (animator && !string.IsNullOrEmpty(hideTriggerName))
             animator.SetTrigger(hideTriggerHash);
 
-        // Bloquear movimiento
         if (movement) movement.enabled = false;
 
-        // Desactivar collider
         var col = GetComponent<Collider2D>();
         if (col) col.enabled = false;
 
-        // Ocultar sprite
         if (spriteRenderer && hideSpriteCompletely)
             spriteRenderer.enabled = false;
 
-        // Auto-unhide
         if (autoUnhideCo != null) StopCoroutine(autoUnhideCo);
-        autoUnhideCo = StartCoroutine(AutoUnhideAfter(hideDuration));
+        autoUnhideCo = StartCoroutine(AutoUnhideAfter(durationToUse));
     }
 
     private IEnumerator AutoUnhideAfter(float seconds)
@@ -137,7 +131,6 @@ public class WaterMaskHideController : MonoBehaviour
             autoUnhideCo = null;
         }
 
-        // Teleport al exit point del spot (si existe)
         if (useExitPoints && hiddenInSpot != null)
         {
             Transform exit = hiddenInSpot.GetExitPoint();
@@ -148,21 +141,17 @@ public class WaterMaskHideController : MonoBehaviour
             }
         }
 
-        // Libera spot y apaga overlay
         if (hiddenInSpot)
         {
             hiddenInSpot.Unhide(this);
             hiddenInSpot = null;
         }
 
-        // Reactivar collider
         var col = GetComponent<Collider2D>();
         if (col) col.enabled = true;
 
-        // Reactivar movimiento
         if (movement) movement.enabled = true;
 
-        // Mostrar sprite
         if (spriteRenderer && hideSpriteCompletely)
             spriteRenderer.enabled = true;
     }
