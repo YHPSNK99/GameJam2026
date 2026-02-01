@@ -6,25 +6,28 @@ public class WaterMaskHideController : MonoBehaviour
 {
     [Header("Refs")]
     [SerializeField] private ItemEquip itemEquip;
-    [SerializeField] private PjMovement movement;     // <-- ahora tipado
+    [SerializeField] private PjMovement movement;                 // tu script de movimiento
     [SerializeField] private Animator animator;
     [SerializeField] private SpriteRenderer spriteRenderer;
 
     [Header("Hide visuals")]
-    [SerializeField] private bool hideSpriteCompletely = true;
-    [SerializeField] private string hideTriggerName = "Hide"; // Trigger Animator (opcional)
+    [SerializeField] private bool hideSpriteCompletely = true;     // true = desaparece al esconderse
+    [SerializeField] private string hideTriggerName = "Hide";      // Trigger en Animator (opcional)
 
     [Header("Auto Unhide")]
-    [Tooltip("0 = no auto-salir. >0 = sale solo después de X segundos.")]
-    [SerializeField] private float hideDuration = 2.0f;
+    [Tooltip("Segundos que permanece escondido. Debe ser > 0.")]
+    [SerializeField] private float hideDuration = 5f;
 
-    [Tooltip("Dirección al salir (solo se usa si forceExitLookDir=true).")]
+    [Tooltip("Si está activo, mientras esté escondido ignorará el input Defend (se queda sí o sí).")]
+    [SerializeField] private bool lockInputWhileHidden = true;
+
+    [Header("Exit look direction (optional)")]
+    [SerializeField] private bool forceExitLookDir = false;
     [SerializeField] private Vector2 exitLookDir = Vector2.down;
-
-    [SerializeField] private bool forceExitLookDir = true;
 
     private WaterHideSpot nearbySpot;
     private WaterHideSpot hiddenInSpot;
+
     private bool isHidden;
     private Coroutine autoUnhideCo;
 
@@ -45,15 +48,21 @@ public class WaterMaskHideController : MonoBehaviour
         hideTriggerHash = Animator.StringToHash(hideTriggerName);
     }
 
-    // Input System: acción "Defend" => método "OnDefend"
+    // Input System (Send Messages): acción "Defend" => método "OnDefend"
     public void OnDefend()
     {
+        // Si está escondido: NO permitir salir manual si lockInputWhileHidden está activo
         if (isHidden)
         {
+            if (lockInputWhileHidden)
+                return;
+
+            // Si algún día quieres permitir salir manual cuando lockInputWhileHidden=false:
             Unhide();
             return;
         }
 
+        // No está escondido: intentar esconderse
         if (nearbySpot == null) return;
         if (!CanUseWaterHide()) return;
         if (nearbySpot.IsOccupied) return;
@@ -76,6 +85,9 @@ public class WaterMaskHideController : MonoBehaviour
 
     private void Hide()
     {
+        if (hideDuration <= 0f) hideDuration = 0.1f;
+
+        // Reserva spot
         if (!nearbySpot.TryHide(this)) return;
 
         hiddenInSpot = nearbySpot;
@@ -90,27 +102,27 @@ public class WaterMaskHideController : MonoBehaviour
         // Bloquear movimiento
         if (movement) movement.enabled = false;
 
-        // Desactivar collider del player
+        // Desactivar collider del player (para que no lo empujen / detecten)
         var col = GetComponent<Collider2D>();
         if (col) col.enabled = false;
 
-        // Ocultar visual
+        // Ocultar visual del player
         if (spriteRenderer && hideSpriteCompletely)
             spriteRenderer.enabled = false;
 
-        // Auto-unhide
-        if (hideDuration > 0f)
-        {
-            if (autoUnhideCo != null) StopCoroutine(autoUnhideCo);
-            autoUnhideCo = StartCoroutine(AutoUnhideAfter(hideDuration));
-        }
+        // Auto-unhide (se queda sí o sí este tiempo)
+        if (autoUnhideCo != null) StopCoroutine(autoUnhideCo);
+        autoUnhideCo = StartCoroutine(AutoUnhideAfter(hideDuration));
     }
 
     private IEnumerator AutoUnhideAfter(float seconds)
     {
         yield return new WaitForSeconds(seconds);
-        // si sigue escondido, salir
-        if (isHidden) Unhide();
+
+        // Si sigue escondido, salir
+        if (isHidden)
+            Unhide();
+
         autoUnhideCo = null;
     }
 
@@ -127,7 +139,7 @@ public class WaterMaskHideController : MonoBehaviour
             autoUnhideCo = null;
         }
 
-        // Libera spot
+        // Libera spot y vuelve visual normal del spot
         if (hiddenInSpot)
         {
             hiddenInSpot.Unhide(this);
@@ -145,13 +157,11 @@ public class WaterMaskHideController : MonoBehaviour
         if (spriteRenderer && hideSpriteCompletely)
             spriteRenderer.enabled = true;
 
-        // Forzar dirección al salir (para que la anim quede mirando correcto)
+        // Opcional: forzar dirección al salir (para que anim quede mirando correcto)
         if (forceExitLookDir && animator)
         {
             Vector2 dir = exitLookDir;
             if (dir.sqrMagnitude < 0.001f) dir = Vector2.down;
-
-            // cuantiza a 4 por coherencia con tu anim
             dir = QuantizeTo4(dir);
 
             animator.SetFloat(HashHorizontal, dir.x);
