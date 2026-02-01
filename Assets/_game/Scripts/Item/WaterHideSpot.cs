@@ -10,7 +10,14 @@ public class WaterHideSpot : MonoBehaviour
     [SerializeField] private GameObject promptKeyboard;
     [SerializeField] private GameObject promptGamepad;
 
+    [Header("Exit points (optional)")]
+    [SerializeField] private Transform exitUp;
+    [SerializeField] private Transform exitDown;
+    [SerializeField] private Transform exitLeft;
+    [SerializeField] private Transform exitRight;
+
     private WaterMaskHideController currentHider;
+    private Vector2 lastHideDir = Vector2.down;
 
     public bool IsOccupied => currentHider != null;
 
@@ -20,21 +27,48 @@ public class WaterHideSpot : MonoBehaviour
         SetWet(false);
     }
 
+    // ✅ Compatibilidad: método viejo (1 argumento)
     public bool TryHide(WaterMaskHideController hider)
+    {
+        return TryHide(hider, Vector2.down);
+    }
+
+    // ✅ Método nuevo (2 argumentos) para guardar dirección
+    public bool TryHide(WaterMaskHideController hider, Vector2 hideDir)
     {
         if (IsOccupied) return false;
 
         currentHider = hider;
+        lastHideDir = QuantizeTo4(hideDir);
+
         SetPrompt(false, hider);
         SetWet(true);
+
+        // ✅ PUZZLE HOOK (si este spot tiene BottleHideSpot, lo notifica)
+        var bottle = GetComponent<BottleHideSpot>();
+        if (bottle)
+            bottle.OnPlayerHide();
+
         return true;
     }
 
     public void Unhide(WaterMaskHideController hider)
     {
         if (currentHider != hider) return;
+
         currentHider = null;
         SetWet(false);
+    }
+
+    public Transform GetExitPoint()
+    {
+        // Si no asignaste exits, devuelve null y el player saldrá en el mismo lugar
+        if (!exitUp && !exitDown && !exitLeft && !exitRight) return null;
+
+        if (Mathf.Abs(lastHideDir.x) > Mathf.Abs(lastHideDir.y))
+            return lastHideDir.x > 0 ? exitRight : exitLeft;
+        else
+            return lastHideDir.y > 0 ? exitUp : exitDown;
     }
 
     private void SetWet(bool wet)
@@ -50,7 +84,7 @@ public class WaterHideSpot : MonoBehaviour
         if (!show || player == null) return;
 
         var pi = player.GetComponent<PlayerInput>();
-        if (pi != null && pi.currentControlScheme == "Gamepad")
+        if (pi != null && pi.currentControlScheme != null && pi.currentControlScheme.Contains("Gamepad"))
         {
             if (promptGamepad) promptGamepad.SetActive(true);
         }
@@ -78,5 +112,15 @@ public class WaterHideSpot : MonoBehaviour
 
         SetPrompt(false, player);
         player.ClearNearbySpot(this);
+    }
+
+    private static Vector2 QuantizeTo4(Vector2 v)
+    {
+        if (v.sqrMagnitude < 0.001f) return Vector2.down;
+
+        if (Mathf.Abs(v.x) > Mathf.Abs(v.y))
+            return new Vector2(Mathf.Sign(v.x), 0f);
+        else
+            return new Vector2(0f, Mathf.Sign(v.y));
     }
 }
