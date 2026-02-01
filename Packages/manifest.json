@@ -5,10 +5,7 @@
     "com.unity.feature.2d": "2.0.1",
     "com.unity.ide.visualstudio": "2.0.22",
     "com.unity.inputsystem": "1.14.2",
-<<<<<<< HEAD
-=======
     "com.unity.render-pipelines.universal": "14.0.12",
->>>>>>> 0e2a1ad0c6171c33ec7c0ff7b64b38781c7420dd
     "com.unity.test-framework": "1.1.33",
     "com.unity.textmeshpro": "3.0.9",
     "com.unity.timeline": "1.7.7",
